@@ -1,46 +1,45 @@
 import scala.collection.immutable.List
 
-object base:
-  def transformString(s: String): List[String] = s.split(" ").toList
+def transformString(s: String): List[String] = s.split(" ").toList
 
-object abreTempoObj:
-  class Node[A](children: Map[Char, Node[A]] = Map(), value: Option[A] = None):
-    def addNode(key: Char, grandChildrens: Node[A]): Node[A] = Node[A](children + (key -> grandChildrens), value)
 
-    def changeOption(newValue: Option[A]): Node[A] = Node[A](children,newValue)
+class Node[A](val children: Map[Char, Node[A]] = Map(), value: Option[A] = None):
+  def addNode(key: Char, grandChildrens: Node[A]): Node[A] = Node[A](children + (key -> grandChildrens), value)
 
-    def copy(children: Map[Char, Node[A]] = children, value: Option[A] = value): Node[A] =
-      Node(children, value)
-    
-    def constructTrieGeneriqueTempo(l: List[String]): Map[Char, Node[Char]] = {
+  def changeOption(newValue: Option[A]): Node[A] = Node[A](children, newValue)
 
-      def insertWord(root: Map[Char, Node[Char]], word: List[Char], nextWord: Option[String]): Map[Char, Node[Char]] = {
-        word match {
-          case Nil => root
-          case x :: xs =>
-            insertWordHelper(root, x, xs, nextWord)
-        }
+  def copy(children: Map[Char, Node[A]] = children, value: Option[A] = value): Node[A] =
+    Node(children, value)
+
+  def constructTrieGeneriqueTempo(l: List[String]): Map[Char, Node[A]] = {
+
+    def insertWord(root: Map[Char, Node[A]], word: List[Char], nodeValue: Option[A]): Map[Char, Node[A]] = {
+      word match {
+        case Nil => root
+        case x :: xs =>
+          insertWordHelper(root, x, xs, nodeValue)
       }
-
-      def insertWordHelper(root: Map[Char, Node[Char]], x: Char, xs: List[Char], nextWord: Option[String]): Map[Char, Node[Char]] = {
-        root.get(x) match {
-          case Some(childNode) =>
-            root + (x -> (if (xs.isEmpty) childNode.changeOption(nextWord) else childNode.addNode(xs.head, childNode.copy(children = insertWord(childNode.children, xs, nextWord)))))///TODO le .children ne marche pas ? 
-          case None =>
-            root + (x -> (if (xs.isEmpty) Node(Map(), nextWord) else Node(Map(xs.head -> Node(insertWord(Map(), xs, nextWord))))))
-        }
-      }
-
-      def constructAux(words: List[String], acc: Map[Char, Node[Char]]): Map[Char, Node[Char]] = {
-        words match {
-          case Nil => acc
-          case x :: xs =>
-            constructAux(xs, insertWord(acc, x.toList, xs.headOption))
-        }
-      }
-
-      constructAux(l, Map())
     }
+
+    def insertWordHelper(root: Map[Char, Node[A]], x: Char, xs: List[Char], nodeValue: Option[A]): Map[Char, Node[A]] = {
+      root.get(x) match {
+        case Some(childNode) =>
+          root + (x -> (if (xs.isEmpty) childNode.changeOption(nodeValue) else childNode.addNode(xs.head, childNode.copy(children = insertWord(childNode.children, xs, nodeValue))))) 
+        case None =>
+          root + (x -> (if (xs.isEmpty) Node(Map(), nodeValue) else Node(Map(xs.head -> Node(insertWord(Map(), xs, nodeValue))))))
+      }
+    }
+
+    def constructAux(words: List[String], acc: Map[Char, Node[String]]): Map[Char, Node[String]] = {
+      words match {
+        case Nil => acc
+        case x :: xs =>
+          constructAux(xs, insertWord(acc, x.toList, xs.headOption))
+      }
+    }
+
+    constructAux(l, Map())
+  }
 
 
   def constructTrieApres(l: List[String]): Map[String, Node[String]] = ???
