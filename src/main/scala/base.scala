@@ -12,9 +12,9 @@ object abreTempoObj:
     def copy(children: Map[Char, Node[A]] = children, value: Option[A] = value): Node[A] =
       Node(children, value)
     
-    def constructTrieGeneriqueTempo(l: List[String]): Map[Char, Node[String]] = {
+    def constructTrieGeneriqueTempo(l: List[String]): Map[Char, Node[Char]] = {
 
-      def insertWord(root: Map[Char, Node[String]], word: List[Char], nextWord: Option[String]): Map[Char, Node[String]] = {
+      def insertWord(root: Map[Char, Node[Char]], word: List[Char], nextWord: Option[String]): Map[Char, Node[Char]] = {
         word match {
           case Nil => root
           case x :: xs =>
@@ -22,7 +22,7 @@ object abreTempoObj:
         }
       }
 
-      def insertWordHelper(root: Map[Char, Node[String]], x: Char, xs: List[Char], nextWord: Option[String]): Map[Char, Node[String]] = {
+      def insertWordHelper(root: Map[Char, Node[Char]], x: Char, xs: List[Char], nextWord: Option[String]): Map[Char, Node[Char]] = {
         root.get(x) match {
           case Some(childNode) =>
             root + (x -> (if (xs.isEmpty) childNode.changeOption(nextWord) else childNode.addNode(xs.head, childNode.copy(children = insertWord(childNode.children, xs, nextWord)))))///TODO le .children ne marche pas ? 
@@ -31,7 +31,7 @@ object abreTempoObj:
         }
       }
 
-      def constructAux(words: List[String], acc: Map[Char, Node[String]]): Map[Char, Node[String]] = {
+      def constructAux(words: List[String], acc: Map[Char, Node[Char]]): Map[Char, Node[Char]] = {
         words match {
           case Nil => acc
           case x :: xs =>
