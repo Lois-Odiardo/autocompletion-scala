@@ -13,16 +13,18 @@ class Tests extends AnyFlatSpec {
   }
 
   "constructDico" should "be defined" in {
-    val dico = base.constructDico("hello world hello scala")
+    val dico = base.constructDico("hello world hello scala hello scala")
     val valueAtHello = dico.getValueAtWord("hello")
     valueAtHello.isDefined shouldBe true
     valueAtHello.get.tabProba("world") shouldBe 1
-    valueAtHello.get.tabProba("scala") shouldBe 1
+    valueAtHello.get.tabProba("scala") shouldBe 2
     valueAtHello.get.tabProba.contains("hello") shouldBe false
   }
 
-  "verifyProbable" should "be defined" in {
-    //TODO une fois qu'on a la structure de base, modifier
+  "getNextWordInDico" should "be defined" in {
+    val dico = base.constructDico("hello world hello scala hello scala")
+    base.getNextWordInDico("hello",dico) shouldBe "scala"
+    base.getNextWordInDico("world",dico) shouldBe "hello"
   }
 
 }
