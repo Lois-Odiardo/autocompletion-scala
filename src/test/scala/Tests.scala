@@ -22,9 +22,18 @@ class Tests extends AnyFlatSpec {
   }
 
   "getNextWordInDico" should "be defined" in {
-    val dico = base.constructDico("hello world hello scala hello scala")
+    val dico = base.constructDico("hello world hello scala hello scala test")
     base.getNextWordInDico("hello",dico) shouldBe "scala"
     base.getNextWordInDico("world",dico) shouldBe "hello"
+    base.getNextWordInDico("test", dico) shouldBe ""
   }
+
+  "Trie navigation" should "be defined" in {
+    val dico = base.constructDico("a b a c a b")
+    val aNode = dico.getValueAtWord("a")
+    aNode.get.tabProba("b") shouldBe 2
+    aNode.get.tabProba("c") shouldBe 1
+  }
+
 
 }
