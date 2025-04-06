@@ -44,26 +44,33 @@ class Node[A](protected val children: Map[Char, Node[A]] = Map(),protected val v
 
     addToTrieWithOptionAux(Node[A](children, value), s.toList, valueForWord, updateValueFonction)
 
-  def getValueAtWord(s: String): Option[A] = ???
-  /*
-  def constructTrieGenerique(l: List[String]): Map[Char, Node[A]] = {
-    def insertWord(root: Map[Char, Node[A]], word: List[Char], nodeValue: Option[A]): Map[Char, Node[A]] = {
-      word match {
-        case Nil => root
-        case x :: xs =>
-          insertWordHelper(root, x, xs, nodeValue)
-      }
+  @tailrec
+  private def getValueAtCharList(l : List[Char]): Option[A] = l match
+      case Nil => value
+      case x :: xs => children.get(x) match
+        case Some(childNode) => childNode.getValueAtCharList(xs)
+        case None => None
+        
+  def getValueAtWord(s: String): Option[A] = getValueAtCharList(s.toList)
+/*
+def constructTrieGenerique(l: List[String]): Map[Char, Node[A]] = {
+  def insertWord(root: Map[Char, Node[A]], word: List[Char], nodeValue: Option[A]): Map[Char, Node[A]] = {
+    word match {
+      case Nil => root
+      case x :: xs =>
+        insertWordHelper(root, x, xs, nodeValue)
     }
+  }
 
-    def insertWordHelper(root: Map[Char, Node[A]], x: Char, xs: List[Char], nodeValue: Option[A]): Map[Char, Node[A]] = {
-      root.get(x) match {
-        case Some(childNode) =>
-          root + (x -> (if (xs.isEmpty) childNode.changeOption(nodeValue) else childNode.addNode(xs.head, childNode.copy(children = insertWord(childNode.children, xs, nodeValue)))))
-        case None =>
-          root + (x -> (if (xs.isEmpty) Node(Map(), nodeValue) else Node(Map(xs.head -> Node(insertWord(Map(), xs, nodeValue))))))
-      }
+  def insertWordHelper(root: Map[Char, Node[A]], x: Char, xs: List[Char], nodeValue: Option[A]): Map[Char, Node[A]] = {
+    root.get(x) match {
+      case Some(childNode) =>
+        root + (x -> (if (xs.isEmpty) childNode.changeOption(nodeValue) else childNode.addNode(xs.head, childNode.copy(children = insertWord(childNode.children, xs, nodeValue)))))
+      case None =>
+        root + (x -> (if (xs.isEmpty) Node(Map(), nodeValue) else Node(Map(xs.head -> Node(insertWord(Map(), xs, nodeValue))))))
     }
-  }*/
+  }
+}*/
 
 class Probabilite(tabProba: Map[String, Int]):
   def addProbaToWord(s: String): Probabilite =
