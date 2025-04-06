@@ -72,7 +72,7 @@ def constructTrieGenerique(l: List[String]): Map[Char, Node[A]] = {
   }
 }*/
 
-class Probabilite(tabProba: Map[String, Int]):
+class Probabilite(val tabProba: Map[String, Int]):
   def addProbaToWord(s: String): Probabilite =
     tabProba.get(s) match
       case Some(value) =>
