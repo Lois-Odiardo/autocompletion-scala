@@ -1,9 +1,24 @@
 import scala.collection.immutable.List
 
-def transformString(s: String): List[String] = s.split(" ").toList
+object base:
+  def transformString(s: String): List[String] = s.split(" ").toList
 
+  def constructDico(s: String): Node[Probabilite] =
+    def constructDicoAux(l : List[String] , dicoAlreadyFormed: Node[Probabilite]): Node[Probabilite] = l match
+      case Nil => dicoAlreadyFormed
+      case x :: xs => xs match
+        case Nil => dicoAlreadyFormed
+        case y :: ys => constructDicoAux(xs , dicoAlreadyFormed.addToTrieWithOption(x,Some(y),constructProba))
 
-class Node[A](val children: Map[Char, Node[A]] = Map(), value: Option[A] = None):
+    constructDicoAux(transformString(s),Node[Probabilite]())
+    
+  def constructProba(newValue : Option[String] , oldValue : Option[Probabilite]): Option[Probabilite] = newValue match
+    case Some(mot) => oldValue match
+      case Some(oldTabProba) => Some(oldTabProba.addProbaToWord(mot))
+      case None => Some(Probabilite(Map(mot -> 1)))
+    case None => oldValue
+
+class Node[A](val children: Map[Char, Node[A]] = Map(),val value: Option[A] = None):
   def addNode(key: Char, grandChildrens: Node[A]): Node[A] = Node[A](children + (key -> grandChildrens), value)
 
   def changeOption(newValue: Option[A]): Node[A] = Node[A](children, newValue)
@@ -11,8 +26,19 @@ class Node[A](val children: Map[Char, Node[A]] = Map(), value: Option[A] = None)
   def copy(children: Map[Char, Node[A]] = children, value: Option[A] = value): Node[A] =
     Node(children, value)
 
-  def constructTrieGeneriqueTempo(l: List[String]): Map[Char, Node[A]] = {
+  def addToTrieWithOption[B](s: String, valueForWord: Option[B], updateValueFonction: (Option[B], Option[A]) => Option[A]): Node[A] =
+    def addToTrieWithOptionAux(currentNode: Node[A], word: List[Char], valueForWord: Option[B], updateValueFonction: (Option[B], Option[A]) => Option[A]): Node[A] = word match
+      case Nil => Node[A](currentNode.children , updateValueFonction(valueForWord,currentNode.value))
+      case x :: xs => 
+        currentNode.children.get(x) match
+          case Some(letterChildNode) => 
+            Node[A](currentNode.children + (x -> addToTrieWithOptionAux(letterChildNode , xs , valueForWord , updateValueFonction)) , currentNode.value)
+          case None => Node[A](currentNode.children + (x -> addToTrieWithOptionAux(Node[A]() , xs , valueForWord , updateValueFonction)) , currentNode.value)
 
+    addToTrieWithOptionAux(Node[A](children, value), s.toList, valueForWord, updateValueFonction)
+
+  /*
+  def constructTrieGenerique(l: List[String]): Map[Char, Node[A]] = {
     def insertWord(root: Map[Char, Node[A]], word: List[Char], nodeValue: Option[A]): Map[Char, Node[A]] = {
       word match {
         case Nil => root
@@ -24,63 +50,22 @@ class Node[A](val children: Map[Char, Node[A]] = Map(), value: Option[A] = None)
     def insertWordHelper(root: Map[Char, Node[A]], x: Char, xs: List[Char], nodeValue: Option[A]): Map[Char, Node[A]] = {
       root.get(x) match {
         case Some(childNode) =>
-          root + (x -> (if (xs.isEmpty) childNode.changeOption(nodeValue) else childNode.addNode(xs.head, childNode.copy(children = insertWord(childNode.children, xs, nodeValue))))) 
+          root + (x -> (if (xs.isEmpty) childNode.changeOption(nodeValue) else childNode.addNode(xs.head, childNode.copy(children = insertWord(childNode.children, xs, nodeValue)))))
         case None =>
           root + (x -> (if (xs.isEmpty) Node(Map(), nodeValue) else Node(Map(xs.head -> Node(insertWord(Map(), xs, nodeValue))))))
       }
     }
+  }*/
 
-    def constructAux(words: List[String], acc: Map[Char, Node[String]]): Map[Char, Node[String]] = {
-      words match {
-        case Nil => acc
-        case x :: xs =>
-          constructAux(xs, insertWord(acc, x.toList, xs.headOption))
-      }
-    }
-
-    constructAux(l, Map())
-  }
-
-
-  def constructTrieApres(l: List[String]): Map[String, Node[String]] = ???
-
+//TODO : si j'obtiens pas la réponse sur le parcours de map il faudra faire par liste, ou sinon passer par keySet
+class Probabilite(tabProba: Map[String, Int]):
+  def addProbaToWord(s: String): Probabilite =
+    tabProba.get(s) match
+      case Some(value) =>
+        Probabilite(tabProba + (s -> (value + 1)))
+      case None =>
+        Probabilite(tabProba + (s -> 1))
 /*
-object Trie :
-
-// La structure du Trie, chaque élément est une liste d'éléments de type TrieNode
-def insert(trie: List[TrieNode], prevWord: String, nextWord: String): List[TrieNode] = {
-  // Chercher si le mot précédent existe déjà dans la liste des noeuds
-  val nodeOpt = trie.find(_.word == prevWord)
-
-  nodeOpt match {
-    case Some(node) =>
-      // Si le noeud existe, on retourne une nouvelle liste avec un noeud mis à jour
-      (new TrieNode(prevWord, node.nextWordCounts :+ (nextWord, 1))) :: trie.filterNot(_.word == prevWord)
-    case None =>
-      // Si le mot précédent n'existe pas, on crée un nouveau noeud
-      new TrieNode(prevWord, List((nextWord, 1))) :: trie
-  }
-}
-
-// Calcule les probabilités des mots suivants pour un mot donné
-def getNextWordProbabilities(trie: List[TrieNode], word: String): List[(String, Double)] = {
-  // Trouver le noeud correspondant au mot
-  trie.find(_.word == word) match {
-    case Some(node) => node.getProbabilities
-    case None => List() // Aucun mot suivant trouvé
-  }
-}
-
-
-class TrieNode(val word: String, val nextWordCounts: List[(String, Int)]) {
-
-// Calcule les probabilités des mots suivants
-def getProbabilities: List[(String, Double)] = {
-  val total = nextWordCounts.map(_._2).sum.toDouble
-  if (total == 0) List()
-  else nextWordCounts.map {
-    case (word, count) => (word, count / total)
-  }
-}
-}
- */
+  def getBestProba(): String =
+    def getBestProbaAux(tab: Map[String,Int]): String = tab match
+      case (x -> y) :: z => "s"*/
