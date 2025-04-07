@@ -25,6 +25,21 @@ object base:
       case Some(proba) => proba.getBestProba
       case None => ""
 
+  def completeText(prefix: String, dico: Node[Probabilite], x: Int): String =
+    @tailrec
+    def loop(currentPhrase: List[String], remaining: Int): List[String] =
+      if remaining == 0 then currentPhrase
+      else
+        val lastWord = currentPhrase.lastOption.getOrElse("")
+        val nextWord = getNextWordInDico(lastWord, dico)
+        if nextWord == "" then currentPhrase
+        else loop(currentPhrase :+ nextWord, remaining - 1)
+
+    val baseWords = transformString(prefix)
+    val completedWords = loop(baseWords, x)
+    completedWords.mkString(" ")
+
+
 class Node[A](protected val children: Map[Char, Node[A]] = Map(),protected val value: Option[A] = None):
   def addNode(key: Char, grandChildrens: Node[A]): Node[A] = Node[A](children + (key -> grandChildrens), value)
 
@@ -52,25 +67,7 @@ class Node[A](protected val children: Map[Char, Node[A]] = Map(),protected val v
         case None => None
         
   def getValueAtWord(s: String): Option[A] = getValueAtCharList(s.toList)
-/*
-def constructTrieGenerique(l: List[String]): Map[Char, Node[A]] = {
-  def insertWord(root: Map[Char, Node[A]], word: List[Char], nodeValue: Option[A]): Map[Char, Node[A]] = {
-    word match {
-      case Nil => root
-      case x :: xs =>
-        insertWordHelper(root, x, xs, nodeValue)
-    }
-  }
 
-  def insertWordHelper(root: Map[Char, Node[A]], x: Char, xs: List[Char], nodeValue: Option[A]): Map[Char, Node[A]] = {
-    root.get(x) match {
-      case Some(childNode) =>
-        root + (x -> (if (xs.isEmpty) childNode.changeOption(nodeValue) else childNode.addNode(xs.head, childNode.copy(children = insertWord(childNode.children, xs, nodeValue)))))
-      case None =>
-        root + (x -> (if (xs.isEmpty) Node(Map(), nodeValue) else Node(Map(xs.head -> Node(insertWord(Map(), xs, nodeValue))))))
-    }
-  }
-}*/
 
 class Probabilite(val tabProba: Map[String, Int]):
   def addProbaToWord(s: String): Probabilite =
@@ -91,3 +88,25 @@ class Probabilite(val tabProba: Map[String, Int]):
           getBestProbaAux(xs , xString , xInt)
 
     getBestProbaAux(tabProba.toList , "" , -1)
+
+
+
+/*
+def constructTrieGenerique(l: List[String]): Map[Char, Node[A]] = {
+  def insertWord(root: Map[Char, Node[A]], word: List[Char], nodeValue: Option[A]): Map[Char, Node[A]] = {
+    word match {
+      case Nil => root
+      case x :: xs =>
+        insertWordHelper(root, x, xs, nodeValue)
+    }
+  }
+
+  def insertWordHelper(root: Map[Char, Node[A]], x: Char, xs: List[Char], nodeValue: Option[A]): Map[Char, Node[A]] = {
+    root.get(x) match {
+      case Some(childNode) =>
+        root + (x -> (if (xs.isEmpty) childNode.changeOption(nodeValue) else childNode.addNode(xs.head, childNode.copy(children = insertWord(childNode.children, xs, nodeValue)))))
+      case None =>
+        root + (x -> (if (xs.isEmpty) Node(Map(), nodeValue) else Node(Map(xs.head -> Node(insertWord(Map(), xs, nodeValue))))))
+    }
+  }
+}*/

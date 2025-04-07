@@ -35,5 +35,22 @@ class Tests extends AnyFlatSpec {
     aNode.get.tabProba("c") shouldBe 1
   }
 
+  "completeText" should "generate the most probable next words" in {
+    val trainingText = "je suis très content de te voir je suis ravi de te parler"
+    val dico = base.constructDico(trainingText)
+
+    val completed = base.completeText("je suis très", dico, 3)
+
+    completed shouldBe "je suis très content de te"
+  }
+  it should "work even with empty input" in {
+    val trainingText = "a b c d e"
+    val dico = base.constructDico(trainingText)
+
+    val completed = base.completeText("", dico, 2)
+
+    completed shouldBe ""
+  }
+
 
 }
